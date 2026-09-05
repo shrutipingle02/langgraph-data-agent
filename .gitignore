@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+data/*.csv
+data/extract/*
+data/transform/*
+!data/extract/.gitkeep
+!data/transform/.gitkeep
+*.png
+.DS_Store
