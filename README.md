@@ -1,38 +1,33 @@
-# 🤖 Agentic AI - Data Agent
+# LangGraph Data Agent
 
 A multi-agent system for intelligent data processing and analysis using LangGraph. This project implements an agentic architecture with specialized sub-agents for SQL operations and ETL workflows, running on Google's Gemini models.
 
-## Reference
+## Table of Contents
 
-Built as a learning project, following the architecture from this tutorial:
-https://youtu.be/7yOmi4IX-Rs
-
-## 📋 Table of Contents
-
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Features](#-features)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Project Structure](#-project-structure)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [Agent Descriptions](#-agent-descriptions)
-- [Data Models](#-data-models)
-- [The Dataset](#-the-dataset)
-- [Examples](#-examples)
-- [Security Features](#-security-features)
-- [Development](#-development)
-- [Environment Variables Reference](#-environment-variables-reference)
-- [Troubleshooting](#-troubleshooting)
-- [Performance Considerations](#-performance-considerations)
-- [License](#-license)
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Agent Descriptions](#agent-descriptions)
+- [Data Models](#data-models)
+- [The Dataset](#the-dataset)
+- [Examples](#examples)
+- [Security Features](#security-features)
+- [Development](#development)
+- [Environment Variables Reference](#environment-variables-reference)
+- [Troubleshooting](#troubleshooting)
+- [Performance Considerations](#performance-considerations)
+- [License](#license)
 
 ---
 
-## 🎯 Overview
+## Overview
 
-**Agentic AI Data Agent** processes natural language queries and routes them to specialized agents for execution. The main agent acts as an intelligent router that understands user intent and delegates tasks to either the **SQL Analyst Agent** (for database queries) or the **ETL Analyst Agent** (for data extraction and transformation operations).
+**LangGraph Data Agent** processes natural language queries and routes them to specialized agents for execution. The main agent acts as an intelligent router that understands user intent and delegates tasks to either the **SQL Analyst Agent** (for database queries) or the **ETL Analyst Agent** (for data extraction and transformation operations).
 
 This project covers:
 - Multi-agent orchestration with LangGraph
@@ -43,7 +38,7 @@ This project covers:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 The system follows a hierarchical agent architecture:
 
@@ -81,7 +76,7 @@ Mermaid diagrams for all three graphs are exported as `*_graph.mmd`.
 
 ---
 
-## ✨ Features
+## Features
 
 ### Core Capabilities
 
@@ -113,16 +108,16 @@ Mermaid diagrams for all three graphs are exported as `*_graph.mmd`.
 
 ---
 
-## 📦 Prerequisites
+## Prerequisites
 
 - Python 3.12+
 - PostgreSQL database (Docker is the easiest route)
-- A Gemini API key — free from [Google AI Studio](https://aistudio.google.com/apikey)
+- A Gemini API key, free from [Google AI Studio](https://aistudio.google.com/apikey)
 - Virtual environment (recommended)
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### 1. Clone and Setup Project
 
@@ -203,7 +198,7 @@ python feed_db.py         # creates the tables and loads them
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 langgraph-data-agent/
@@ -241,7 +236,7 @@ langgraph-data-agent/
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### LLM Selection (`utils/llm_pick.py`)
 
@@ -286,7 +281,7 @@ result = obj.execute_sql("SELECT * FROM users LIMIT 5;")
 
 ---
 
-## 💻 Usage
+## Usage
 
 ### Running the Data Agent
 
@@ -295,7 +290,7 @@ python main.py
 ```
 
 ```
-Data Agent. Ask a question about the database, or ask for an ETL job.
+Data Agent. Ask a question about the database or ask for an ETL job.
 Ctrl+C to quit.
 
 > which payment method is used most often?
@@ -322,11 +317,11 @@ python utils/database.py     # dump the schema to test_schema_details.txt
 
 ---
 
-## 🤖 Agent Descriptions
+## Agent Descriptions
 
 ### 1. **Data Agent (Main Router)**
 
-The entry point. Reads the user's message, classifies it, and dispatches.
+The entry point. Reads the user's message, classifies it and dispatches.
 
 - **State**: `DataAgentSchema`
 - **Nodes**: `router_node`, `sql_node`, `etl_node`
@@ -335,33 +330,33 @@ The entry point. Reads the user's message, classifies it, and dispatches.
 
 ### 2. **SQL Analyst Agent**
 
-A fixed pipeline. Every step is a node, and one conditional edge decides whether the query is safe enough to run.
+A fixed pipeline. Every step is a node and one conditional edge decides whether the query is safe enough to run.
 
 - **State**: `AgentSchema`
 - **Nodes**:
-  - `curate_ques` — tidies the raw question (`low`)
-  - `prompt_query_context` — reads the live DB schema and builds the prompt
-  - `generate_sql` — writes the Postgres query (`medium`)
-  - `is_safe_sql` — a second model judges the query (`medium`, structured output → `JudgeSchema`)
-  - `canceled_sql` — the refusal path, explains why
-  - `execute_sql` — runs the query
-  - `represent_final_answer` — writes the plain-English answer (`low`)
+  - `curate_ques`, tidies the raw question (`low`)
+  - `prompt_query_context`, reads the live DB schema and builds the prompt
+  - `generate_sql`, writes the Postgres query (`medium`)
+  - `is_safe_sql`, a second model judges the query (`medium`, structured output → `JudgeSchema`)
+  - `canceled_sql`, the refusal path, explains why
+  - `execute_sql`, runs the query
+  - `represent_final_answer`, writes the plain-English answer (`low`)
 - **Flow**: `curate → context → generate → judge → (execute → answer | cancel)`
 
 ### 3. **ETL Analyst Agent**
 
-A tool-calling loop rather than a fixed pipeline. The model picks a tool, the tool runs, the result goes back, and it loops until there is nothing left to call.
+A tool-calling loop rather than a fixed pipeline. The model picks a tool, the tool runs, the result goes back and it loops until there is nothing left to call.
 
 - **State**: `ETLAgentSchema`
 - **Nodes**: `llm_node`, `tool_node`
 - **Conditional edge**: `is_tool_call` loops back to `tool_node` while tool calls remain
 - **Tools**:
-  - `extract_load_tool(url, output_folder, format)` — pulls JSON from an API and writes csv/json/parquet
-  - `transform_load_tool(input_file_path, output_folder, output_format, user_question)` — previews the file, asks the model for Pandas code, executes it
+  - `extract_load_tool(url, output_folder, format)`, pulls JSON from an API and writes csv/json/parquet
+  - `transform_load_tool(input_file_path, output_folder, output_format, user_question)`, previews the file, asks the model for Pandas code, executes it
 
 ---
 
-## 📊 Data Models
+## Data Models
 
 ### AgentSchema (SQL Agent State)
 
@@ -406,19 +401,19 @@ route_response: str
 
 ---
 
-## 📊 The Dataset
+## The Dataset
 
-A generated ride-hailing dataset — five related tables, roughly 110,000 rows. Nothing is real; `generate_data.py` builds it with Faker, seeded so it is reproducible.
+A generated ride-hailing dataset, five related tables, roughly 110,000 rows. Nothing is real; `generate_data.py` builds it with Faker, seeded so it is reproducible.
 
 | Table | Rows | Contents |
 |---|---|---|
-| `users` | 8,000 | Riders and drivers — name, email, city, province, signup date |
-| `vehicles` | 2,200 | Cars linked to drivers — make, model, year, plate |
-| `rides` | 40,000 | Trips — pickup/dropoff times, distance, fare, surge, status |
-| `payments` | 35,235 | One per completed ride — amount, method, status |
+| `users` | 8,000 | Riders and drivers, name, email, city, province, signup date |
+| `vehicles` | 2,200 | Cars linked to drivers, make, model, year, plate |
+| `rides` | 40,000 | Trips, pickup/dropoff times, distance, fare, surge, status |
+| `payments` | 35,235 | One per completed ride, amount, method, status |
 | `ratings` | 24,726 | Star rating and comment after a ride |
 
-The tables are joined by foreign keys, which is the point — answering "which city has the most cancelled rides?" forces the agent to join `rides` to `users`.
+The tables are joined by foreign keys, which is the point, answering "which city has the most cancelled rides?" forces the agent to join `rides` to `users`.
 
 Deliberate messiness, so it behaves like real data:
 - ~12% of rides are cancelled and have no pickup or dropoff time
@@ -428,7 +423,7 @@ Deliberate messiness, so it behaves like real data:
 
 ---
 
-## 📚 Examples
+## Examples
 
 ### Example 1: Database Query
 
@@ -478,9 +473,9 @@ The agent produced a `JOIN` + `GROUP BY` + `HAVING COUNT(r.rating) >= 20` on its
 **Output**
 
 ```
-1. Joseph Jones (ID: 7766) – Average Rating: 4.65 (20 ratings)
-2. Paula Parsons (ID: 6743) – Average Rating: 4.33 (21 ratings)
-3. Eric Kelly (ID: 7928) – Average Rating: 4.29 (21 ratings)
+1. Joseph Jones (ID: 7766), Average Rating: 4.65 (20 ratings)
+2. Paula Parsons (ID: 6743), Average Rating: 4.33 (21 ratings)
+3. Eric Kelly (ID: 7928), Average Rating: 4.29 (21 ratings)
 ...
 ```
 
@@ -504,8 +499,7 @@ Data successfully extracted and saved to data/extract/extracted_data.csv
 **Input**
 
 ```
-> Take data/extract/extracted_data.csv, keep only rows where name contains 'saur',
-  and save it as csv to the data/transform folder
+> Take data/extract/extracted_data.csv, keep only rows where name contains 'saur' and save it as csv to the data/transform folder
 ```
 
 **The agent writes and executes Pandas code of this shape**
@@ -529,9 +523,9 @@ venusaur,https://pokeapi.co/api/v2/pokemon/3/
 
 ---
 
-## 🔐 Security Features
+## Security Features
 
-The SQL agent will happily *write* a destructive query — a second model reviews it before anything reaches the database.
+The SQL agent will happily *write* a destructive query, a second model reviews it before anything reaches the database.
 
 **Input**
 
@@ -558,31 +552,31 @@ Covered:
 - `.env` is gitignored, keys never enter the codebase
 
 **Caveats worth knowing:**
-- The judge is a model, not a parser. It is a good guard, not a guarantee — a read-only database user is the real protection.
+- The judge is a model, not a parser. It is a good guard, not a guarantee, a read-only database user is the real protection.
 - `execute_code` in `utils/etl_tools.py` runs model-generated Python with `exec()`. Fine locally, not something to expose to untrusted input.
 
 ---
 
-## 🛠️ Development
+## Development
 
 ### Adding a New Agent
 
 1. Define its state in `Models/schema.py`
 2. Write the nodes and build a `StateGraph` in `agents/your_agent.py`
 3. Compile it and import it into `agents/data_agent.py`
-4. Add a node and a branch in `route_edge`, and extend `RouterSchema`'s `Literal`
+4. Add a node and a branch in `route_edge` and extend `RouterSchema`'s `Literal`
 
 ### Extending ETL Tools
 
-Add a method to `ETLTools` in `utils/etl_tools.py`, wrap it with `@tool` in `agents/etl_analyst.py`, and append it to the `tools` list. The docstring is what the model reads to decide when to call it, so make it specific.
+Add a method to `ETLTools` in `utils/etl_tools.py`, wrap it with `@tool` in `agents/etl_analyst.py` and append it to the `tools` list. The docstring is what the model reads to decide when to call it, so make it specific.
 
 ### Customizing LLM Selection
 
-Edit the `MODELS` dict in `utils/llm_pick.py`, or override per-tier from `.env` with `LLM_MODEL_LOW`, `LLM_MODEL_MEDIUM`, `LLM_MODEL_HIGH`.
+Edit the `MODELS` dict in `utils/llm_pick.py` or override per-tier from `.env` with `LLM_MODEL_LOW`, `LLM_MODEL_MEDIUM`, `LLM_MODEL_HIGH`.
 
 ---
 
-## 📝 Environment Variables Reference
+## Environment Variables Reference
 
 | Variable | Required | Description |
 |---|---|---|
@@ -598,11 +592,11 @@ Edit the `MODELS` dict in `utils/llm_pick.py`, or override per-tier from `.env` 
 
 ---
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Issue: "429 RESOURCE_EXHAUSTED"
 
-The Gemini free tier allows **20 requests per day, per model**. One SQL question uses four model calls, so the free allowance is roughly five questions per model per day. Either wait for the daily reset, create a key on a **new** Google Cloud project, or enable billing.
+The Gemini free tier allows **20 requests per day, per model**. One SQL question uses four model calls, so the free allowance is roughly five questions per model per day. Either wait for the daily reset, create a key on a **new** Google Cloud project or enable billing.
 
 ### Issue: "Database connection failed"
 
@@ -610,15 +604,15 @@ Check the container is running with `docker ps`. If it is not, `docker start dat
 
 ### Issue: "API key not found"
 
-`GOOGLE_API_KEY` is missing from `.env`, or `load_dotenv()` did not find the file. Run scripts from the project root.
+`GOOGLE_API_KEY` is missing from `.env` or `load_dotenv()` did not find the file. Run scripts from the project root.
 
 ### Issue: "SQL query unsafe"
 
-Working as designed — the judge blocks anything that writes. Rephrase as a read-only question.
+Working as designed, the judge blocks anything that writes. Rephrase as a read-only question.
 
 ### Issue: "Module not found"
 
-Activate the virtual environment, and run from the project root so `agents`, `utils` and `Models` are importable.
+Activate the virtual environment and run from the project root so `agents`, `utils` and `Models` are importable.
 
 ### Issue: "relation does not exist"
 
@@ -626,9 +620,9 @@ The tables were never created or loaded. Run `python generate_data.py` then `pyt
 
 ---
 
-## 📈 Performance Considerations
+## Performance Considerations
 
-- One SQL question = **four** sequential model calls, so expect 5–15 seconds per answer.
+- One SQL question = **four** sequential model calls, so expect 5-15 seconds per answer.
 - `prompt_query_context` reads the full schema plus sample rows on every question. Caching it would cut both latency and tokens.
 - Generated queries are capped at `LIMIT 10` by default, which keeps result payloads small.
 - Cheap models handle the easy steps. Sending everything to the strongest model works but costs several times more for no gain.
@@ -636,21 +630,21 @@ The tables were never created or loaded. Run `python generate_data.py` then `pyt
 
 ---
 
-## 📄 License
+## License
 
 No license. This is a personal learning project.
 
-The architecture follows the tutorial linked at the top, which is also unlicensed. Credit for the original design belongs to its author; the implementation here is my own, rewritten to run on Gemini with a different dataset.
+The architecture follows a publicly available tutorial project. Credit for the original design belongs to its author. The implementation here is my own, rewritten to run on Gemini with a different dataset.
 
 ---
 
-## 👩‍💻 Author
+## Author
 
-**Shruti Pingle** — [github.com/shrutipingle02](https://github.com/shrutipingle02)
+**Shruti Pingle**, [github.com/shrutipingle02](https://github.com/shrutipingle02)
 
 ---
 
-## 🎓 Learning Resources
+## Learning Resources
 
 - [LangGraph documentation](https://langchain-ai.github.io/langgraph/)
 - [LangChain documentation](https://python.langchain.com/)
