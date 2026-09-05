@@ -638,7 +638,7 @@ No license. This is a personal learning project.
 
 ## Author
 
-**Shruti Pingle**, [github.com/shrutipingle02](https://github.com/shrutipingle02)
+**Shruti Pingle**
 
 ---
 
