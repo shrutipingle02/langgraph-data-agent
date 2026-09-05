@@ -1,0 +1,27 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	curate_ques(curate_ques)
+	prompt_query_context(prompt_query_context)
+	generate_sql(generate_sql)
+	is_safe_sql(is_safe_sql)
+	canceled_sql(canceled_sql)
+	execute_sql(execute_sql)
+	represent_final_answer(represent_final_answer)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> curate_ques;
+	curate_ques --> prompt_query_context;
+	execute_sql --> represent_final_answer;
+	generate_sql --> is_safe_sql;
+	is_safe_sql -.-> canceled_sql;
+	is_safe_sql -.-> execute_sql;
+	prompt_query_context --> generate_sql;
+	canceled_sql --> __end__;
+	represent_final_answer --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
