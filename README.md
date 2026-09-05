@@ -634,8 +634,6 @@ The tables were never created or loaded. Run `python generate_data.py` then `pyt
 
 No license. This is a personal learning project.
 
-The architecture follows a publicly available tutorial project. Credit for the original design belongs to its author. The implementation here is my own, rewritten to run on Gemini with a different dataset.
-
 ---
 
 ## Author
