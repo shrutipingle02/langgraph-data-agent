@@ -590,33 +590,7 @@ Edit the `MODELS` dict in `utils/llm_pick.py` or override per-tier from `.env` w
 | `LLM_MODEL_MEDIUM` | No | Override the medium tier model |
 | `LLM_MODEL_HIGH` | No | Override the high tier model |
 
----
 
-## Troubleshooting
-
-### Issue: "429 RESOURCE_EXHAUSTED"
-
-The Gemini free tier allows **20 requests per day, per model**. One SQL question uses four model calls, so the free allowance is roughly five questions per model per day. Either wait for the daily reset, create a key on a **new** Google Cloud project or enable billing.
-
-### Issue: "Database connection failed"
-
-Check the container is running with `docker ps`. If it is not, `docker start data-agent-pg`. Confirm the `.env` host, port, user, password and database match.
-
-### Issue: "API key not found"
-
-`GOOGLE_API_KEY` is missing from `.env` or `load_dotenv()` did not find the file. Run scripts from the project root.
-
-### Issue: "SQL query unsafe"
-
-Working as designed, the judge blocks anything that writes. Rephrase as a read-only question.
-
-### Issue: "Module not found"
-
-Activate the virtual environment and run from the project root so `agents`, `utils` and `Models` are importable.
-
-### Issue: "relation does not exist"
-
-The tables were never created or loaded. Run `python generate_data.py` then `python feed_db.py`.
 
 ---
 
