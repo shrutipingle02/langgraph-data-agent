@@ -632,7 +632,7 @@ The tables were never created or loaded. Run `python generate_data.py` then `pyt
 
 ## License
 
-No license. This is a personal learning project.
+MIT License
 
 ---
 
