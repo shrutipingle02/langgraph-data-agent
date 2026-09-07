@@ -1,4 +1,3 @@
-````markdown
 # LangGraph Data Agent
 
 A natural language assistant for querying PostgreSQL and running data workflows.
@@ -362,4 +361,3 @@ For ETL tasks, confirm that the input file exists and the process can write to t
 ## Author
 
 **Shruti Pingle**
-````
